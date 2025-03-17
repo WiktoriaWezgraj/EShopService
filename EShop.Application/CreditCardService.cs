@@ -6,7 +6,11 @@ namespace EShop.Application
     {
         public bool ValidateCard(string cardNumber)
         {
-            cardNumber = cardNumber.Replace(" ", "");
+            //cały numer powinien mieścić się w 13-19 znakach
+            if (string.IsNullOrEmpty(cardNumber) || cardNumber.Length < 13 || cardNumber.Length > 19)
+                return false;
+
+            cardNumber = cardNumber.Replace(" ", "").Replace("-", "");
             if (!cardNumber.All(char.IsDigit))
                 return false;
 
