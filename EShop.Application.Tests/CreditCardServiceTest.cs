@@ -1,3 +1,5 @@
+using EShop.Domain.Exceptions;
+
 namespace EShop.Application.Tests
 {
     public class CreditCardServiceTest
@@ -59,7 +61,5 @@ namespace EShop.Application.Tests
             string result = credit.GetCardType(cardNumber);
             Assert.Equal(expected, result);
         }
-
-
     }
 }
