@@ -7,10 +7,7 @@ using System.Threading.Tasks;
 namespace EShop.Domain.Exceptions
 {
     public class CardNumberTooLongException : Exception
-    {
-
+    { 
         public CardNumberTooLongException() : base("Card number is too long.") { }
-
-        public CardNumberTooLongException(Exception exception) : base("Card number is too long.", exception) { }
     }
 }

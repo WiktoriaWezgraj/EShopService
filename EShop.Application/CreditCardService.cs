@@ -1,18 +1,28 @@
-﻿using System.Text.RegularExpressions;
+﻿using EShop.Domain.Enums;
+using EShop.Domain.Exceptions;
+using System.Text.RegularExpressions;
 
 namespace EShop.Application
 {
     public class CreditCardService
     {
-        public bool ValidateCard(string cardNumber)
+        public void ValidateCard(string cardNumber)
         {
+            //CardNumberTooShortException
             //cały numer powinien mieścić się w 13-19 znakach
-            if (string.IsNullOrEmpty(cardNumber) || cardNumber.Length < 13 || cardNumber.Length > 19)
-                return false;
+            if (string.IsNullOrEmpty(cardNumber) || cardNumber.Length < 13)
+            {
+                throw new CardNumberTooShortException();
+            }
+
+            if (cardNumber.Length > 19)
+            {
+                throw new CardNumberTooLongException();
+            }
 
             cardNumber = cardNumber.Replace(" ", "").Replace("-", "");
             if (!cardNumber.All(char.IsDigit))
-                return false;
+                throw new CardNumberInvalidException();
 
             int sum = 0;
             bool alternate = false;
@@ -32,34 +42,38 @@ namespace EShop.Application
                 alternate = !alternate;
             }
 
-            return (sum % 10 == 0);
+            if (sum % 10 != 0)
+            {
+                throw new CardNumberInvalidException();
+            }
         }
 
-        public string GetCardType(string cardNumber)
+        public CreditCardProvider? GetCardType(string cardNumber)
         {
             cardNumber = cardNumber.Replace(" ", "").Replace("-", "");
 
             if (Regex.IsMatch(cardNumber, @"^4(\d{12}|\d{15}|\d{18})$"))
-                return "Visa";
+                return CreditCardProvider.Visa;
+
             else if (Regex.IsMatch(cardNumber, @"^(5[1-5]\d{14}|2(2[2-9][1-9]|2[3-9]\d{2}|[3-6]\d{3}|7([01]\d{2}|20\d))\d{10})$"))
-                return "MasterCard";
+                return CreditCardProvider.Mastercard;
 
             if (Regex.IsMatch(cardNumber, @"^3[47]\d{13}$"))
-                return "American Express";
+                return CreditCardProvider.AmericanExpress;
 
             if (Regex.IsMatch(cardNumber, @"^(6011\d{12}|65\d{14}|64[4-9]\d{13}|622(1[2-9][6-9]|[2-8]\d{2}|9([01]\d|2[0-5]))\d{10})$"))
-                return "Discover";
+                return CreditCardProvider.Discover;
 
             if (Regex.IsMatch(cardNumber, @"^(352[89]|35[3-8]\d)\d{12}$"))
-                return "JCB";
+                return CreditCardProvider.JCB;
 
             if (Regex.IsMatch(cardNumber, @"^3(0[0-5]|[68]\d)\d{11}$"))
-                return "Diners Club";
+                return CreditCardProvider.DinersClub;
 
             if (Regex.IsMatch(cardNumber, @"^(50|5[6-9]|6\d)\d{10,17}$"))
-                return "Maestro";
+                return CreditCardProvider.Maestro;
 
-            return "Nieznany wydawca";
+            return null;
         }
     }
 }
