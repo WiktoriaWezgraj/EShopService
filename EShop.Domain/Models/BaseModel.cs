@@ -1,4 +1,7 @@
-﻿namespace EShopService.Models
+﻿using EShop.Domain.Models;
+using System.ComponentModel.DataAnnotations;
+
+namespace EShop.Domain.Models
 {
     public class BaseModel
     {

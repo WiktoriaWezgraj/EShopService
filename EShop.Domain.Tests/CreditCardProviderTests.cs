@@ -36,7 +36,7 @@ namespace EShop.Domain.Tests
         {
             var credit = new CreditCardService();
             string cardNumber = "4111111111111111";
-            Assert.Equal(CreditCardProvider.Visa, credit.GetCardType(cardNumber));
+            Assert.Equal(CreditCardProvider.Visa, credit.GetCardProvider(cardNumber));
         }
     }
 }

@@ -9,13 +9,19 @@ namespace EShopService.Controllers
     [ApiController]
     public class CreditCardController : ControllerBase
     {
+        private readonly ICreditCardService _creditCardService;
+
+        public CreditCardController(ICreditCardService creditCardService)
+        {
+            _creditCardService = creditCardService;
+        }
+
         [HttpGet("{cardNumber}")]
         public IActionResult ValidateCard(string cardNumber)
         {
-            var credit = new CreditCardService();
             try
             {
-                credit.ValidateCard(cardNumber);
+                _creditCardService.ValidateCard(cardNumber);
             }
             catch (CardNumberTooLongException)
             {
@@ -27,10 +33,10 @@ namespace EShopService.Controllers
             }
             catch (CardNumberInvalidException)
             {
-                return StatusCode(400);
+                return StatusCode(406);
             }
 
-            CreditCardProvider? provider = credit.GetCardType(cardNumber);
+            CreditCardProvider? provider = _creditCardService.GetCardProvider(cardNumber);
             if (provider == null)
             {
                 return StatusCode(406);

@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 
 namespace EShop.Application
 {
-    public class CreditCardService
+    public class CreditCardService : ICreditCardService
     {
         public void ValidateCard(string cardNumber)
         {
@@ -48,7 +48,7 @@ namespace EShop.Application
             }
         }
 
-        public CreditCardProvider? GetCardType(string cardNumber)
+        public CreditCardProvider? GetCardProvider(string cardNumber)
         {
             cardNumber = cardNumber.Replace(" ", "").Replace("-", "");
 

@@ -76,7 +76,7 @@ namespace EShop.Application.Tests
         public void GetCardType_ShouldReturnCorrectCardType(string cardNumber, CreditCardProvider? expected)
         {
             var credit = new CreditCardService();
-            CreditCardProvider? result = credit.GetCardType(cardNumber);
+            CreditCardProvider? result = credit.GetCardProvider(cardNumber);
             Assert.Equal(expected, result);
         }
 
@@ -85,7 +85,7 @@ namespace EShop.Application.Tests
         public void GetCardType_ShouldReturnCorrectCardType_unknow(string cardNumber, string expected)
         {
             var credit = new CreditCardService();
-            CreditCardProvider? result = credit.GetCardType(cardNumber);
+            CreditCardProvider? result = credit.GetCardProvider(cardNumber);
             Assert.Null(result);
         }
 
