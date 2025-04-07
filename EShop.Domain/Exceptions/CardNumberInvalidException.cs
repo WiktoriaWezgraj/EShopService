@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EShop.Domain.Exceptions
+namespace EShop.Domain.Exceptions;
+
+public class CardNumberInvalidException : Exception
 {
-    public class CardNumberInvalidException : Exception
-    {
-        public CardNumberInvalidException() : base ("Card number is invalid.") { }
-    }
+    public CardNumberInvalidException() : base ("Card number is invalid.") { }
 }

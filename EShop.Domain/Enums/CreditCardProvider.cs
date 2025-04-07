@@ -1,13 +1,12 @@
-﻿namespace EShop.Domain.Enums
+﻿namespace EShop.Domain.Enums;
+
+public enum CreditCardProvider
 {
-    public enum CreditCardProvider
-    {
-        Visa,
-        Mastercard,
-        AmericanExpress,
-        Discover,
-        JCB,
-        DinersClub,
-        Maestro,
-    }
+    Visa,
+    Mastercard,
+    AmericanExpress,
+    Discover,
+    JCB,
+    DinersClub,
+    Maestro,
 }

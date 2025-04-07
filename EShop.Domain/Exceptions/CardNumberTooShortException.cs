@@ -4,10 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EShop.Domain.Exceptions
+namespace EShop.Domain.Exceptions;
+
+public class CardNumberTooShortException : Exception
 {
-    public class CardNumberTooShortException : Exception
-    {
-        public CardNumberTooShortException() : base("Card number is too short.") { }
-    }
+    public CardNumberTooShortException() : base("Card number is too short.") { }
 }

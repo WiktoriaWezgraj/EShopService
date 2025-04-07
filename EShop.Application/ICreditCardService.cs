@@ -5,12 +5,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace EShop.Application
-{
-    public interface ICreditCardService
-    {
-        void ValidateCard(string cardNumber);
+namespace EShop.Application;
 
-        CreditCardProvider? GetCardProvider(string cardNumber);
-    }
+public interface ICreditCardService
+{
+    void ValidateCard(string cardNumber);
+
+    CreditCardProvider? GetCardProvider(string cardNumber);
 }
