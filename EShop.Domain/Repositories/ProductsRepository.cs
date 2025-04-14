@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace EShop.Domain.Repositories;
 
-public class ProductsRepository
+public class ProductsRepository : IProductsRepository
 {
     private readonly DataContext _dataContext;
 

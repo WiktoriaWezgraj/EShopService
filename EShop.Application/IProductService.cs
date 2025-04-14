@@ -1,5 +1,4 @@
-﻿
-using EShop.Domain.Models;
+﻿using EShop.Domain.Models;
 
 namespace EShop.Application;
 

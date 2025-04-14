@@ -4,11 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EShop.Domain.Models;
 
-    //[Table("Categories")]
     public class Category : BaseModel
     {
-        //[Required]
-        //[MaxLength(255)]
+        public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
     }
 

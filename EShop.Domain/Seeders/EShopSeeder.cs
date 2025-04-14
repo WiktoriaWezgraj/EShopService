@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 
 namespace EShop.Domain.Seeders;
+//asynchronicznie musi wrzucać do bazy danych
 
 public static class EShopSeeder
 {

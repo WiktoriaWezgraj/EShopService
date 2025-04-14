@@ -5,9 +5,9 @@ namespace EShop.Application;
 
 public class ProductService : IProductService
 {
-    private readonly ProductsRepository _productsRepository;
+    public readonly IProductsRepository _productsRepository;
 
-    public ProductService(ProductsRepository productsRepository)
+    public ProductService(IProductsRepository productsRepository)
     {
         _productsRepository = productsRepository;
     }
