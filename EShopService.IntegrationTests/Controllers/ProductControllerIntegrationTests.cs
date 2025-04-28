@@ -1,71 +1,49 @@
-using EShop.Domain.Repositories;
-using EShop.Domain.Seeders;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
-using System.Net.Http.Json;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.DependencyInjection;
 using EShop.Domain.Models;
+using EShop.Domain.Repositories;
 
-namespace EShopService.IntegrationTests.Controllers
+namespace EShop.Application.Service
 {
-    public class ProductControllerIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
+    public class ProductService : IProductService
     {
-        private readonly HttpClient _client;
-        private WebApplicationFactory<Program> _factory;
-
-        public ProductControllerIntegrationTest(WebApplicationFactory<Program> factory)
+        private IProductsRepository _repository;
+        public ProductService(IProductsRepository repository)
         {
-            _factory = factory
-                .WithWebHostBuilder(builder =>
-                {
-                    builder.ConfigureServices(services =>
-                    {
-                        // pobranie dotychczasowej konfiguracji bazy danych
-                        var dbContextOptions = services
-                            .SingleOrDefault(service => service.ServiceType == typeof(DbContextOptions<DataContext>));
-
-                        //// usuniêcie dotychczasowej konfiguracji bazy danych
-                        services.Remove(dbContextOptions);
-
-                        // Stworzenie nowej bazy danych
-                        services
-                            .AddDbContext<DataContext>(options => options.UseInMemoryDatabase("MyDBForTest"));
-
-                    });
-                });
-
-            _client = _factory.CreateClient();
+            _repository = repository;
         }
 
-        [Fact]
-        public async Task Get_ReturnsAllProducts()
+        public async Task<List<Product>> GetAllAsync()
         {
-            // Arrange
-            using (var scope = _factory.Services.CreateScope())
-            {
-                // Pobranie kontekstu bazy danych
-                var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+            var result = await _repository.GetAllProductAsync();
 
-                dbContext.Products.RemoveRange(dbContext.Products);
-
-                // Stworzenie obiektu
-                dbContext.Products.AddRange(
-                    new Product { Name = "Product1" },
-                    new Product { Name = "Product2" }
-                );
-                // Zapisanie obiektu
-                await dbContext.SaveChangesAsync();
-            }
-
-            // Act
-            var response = await _client.GetAsync("/api/product");
-
-            // Assert
-            response.EnsureSuccessStatusCode();
-            var products = await response.Content.ReadFromJsonAsync<List<Product>>();
-            Assert.Equal(2, products?.Count);
+            return result;
         }
 
+        public async Task<Product> GetAsync(int id)
+        {
+            var result = await _repository.GetProductAsync(id);
+
+            return result;
+        }
+
+        public async Task<Product> UpdateAsync(Product product)
+        {
+            var result = await _repository.UpdateProductAsync(product);
+
+            return result;
+        }
+
+        public async Task<Product> AddAsync(Product product)
+        {
+            var result = await _repository.AddProductAsync(product);
+
+            return result;
+        }
+
+        public Product Add(Product product)
+        {
+            var result = _repository.AddProductAsync(product).Result;
+
+            return result;
+        }
     }
 }

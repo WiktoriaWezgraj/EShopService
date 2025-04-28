@@ -1,7 +1,7 @@
 ﻿using EShop.Domain.Models;
 using EShop.Domain.Repositories;
 
-namespace EShop.Application
+namespace EShop.Application.Service
 {
     public class ProductService : IProductService
     {
@@ -25,16 +25,23 @@ namespace EShop.Application
             return result;
         }
 
-        public async Task<Product> Update(Product product)
+        public async Task<Product> UpdateAsync(Product product)
         {
             var result = await _repository.UpdateProductAsync(product);
 
             return result;
         }
 
-        public async Task<Product> Add(Product product)
+        public async Task<Product> AddAsync(Product product)
         {
             var result = await _repository.AddProductAsync(product);
+
+            return result;
+        }
+
+        public Product Add(Product product)
+        {
+            var result = _repository.AddProductAsync(product).Result;
 
             return result;
         }
