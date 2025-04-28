@@ -1,5 +1,5 @@
 ﻿using EShop.Domain.Models;
-
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,37 +11,34 @@ namespace EShop.Domain.Repositories;
 
 public class ProductsRepository : IProductsRepository
 {
-    private readonly DataContext _dataContext;
+    private readonly DataContext _context;
 
     public ProductsRepository(DataContext dataContext)
     {
-        _dataContext = dataContext;
+        _context = dataContext;
     }
 
-    public List<Product> GetAllProducts()
+    public async Task<Product> AddProductAsync(Product product)
     {
-        return _dataContext.Products.ToList();
+        _context.Products.Add(product);
+        await _context.SaveChangesAsync();
+        return product;
     }
 
-    public void AddProduct(Product product)
+    public async Task<List<Product>> GetAllProductAsync()
     {
-        _dataContext.Products.Add(product);
-        _dataContext.SaveChanges();
+        return await _context.Products.ToListAsync();
     }
 
-    public void UpdateProduct(Product product)
+    public async Task<Product> GetProductAsync(int id)
     {
-        _dataContext.Products.Update(product);
-        _dataContext.SaveChanges();
+        return await _context.Products.Where(x => x.Id == id).FirstOrDefaultAsync();
     }
 
-    public void DeleteProduct(int id)
+    public async Task<Product> UpdateProductAsync(Product product)
     {
-        var product = _dataContext.Products.Find(id);
-        if (product != null)
-        {
-            _dataContext.Products.Remove(product);
-            _dataContext.SaveChanges();
-        }
+        _context.Products.Update(product);
+        await _context.SaveChangesAsync();
+        return product;
     }
 }

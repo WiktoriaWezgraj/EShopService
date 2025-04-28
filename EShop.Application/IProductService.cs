@@ -1,11 +1,12 @@
 ﻿using EShop.Domain.Models;
 
-namespace EShop.Application;
-
-public interface IProductService
+namespace EShop.Application
 {
-    List<string> GetProductNames();
-    void Add(Product product);
-    void Update(Product product);
-    void Delete(int id);
+    public interface IProductService
+    {
+        public Task<List<Product>> GetAllAsync();
+        Task<Product> GetAsync(int id);
+        Task<Product> Update(Product product);
+        Task<Product> Add(Product product);
+    }
 }

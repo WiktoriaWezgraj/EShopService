@@ -9,8 +9,10 @@ namespace EShop.Domain.Repositories;
 
 public interface IProductsRepository
 {
-    List<Product> GetAllProducts();
-    void AddProduct(Product product);
-    void UpdateProduct(Product product);
-    void DeleteProduct(int id);
+    #region Product
+    Task<Product> GetProductAsync(int id);
+    Task<Product> AddProductAsync(Product product);
+    Task<Product> UpdateProductAsync(Product user);
+    Task<List<Product>> GetAllProductAsync();
+    #endregion
 }

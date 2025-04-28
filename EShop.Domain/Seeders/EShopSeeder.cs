@@ -1,19 +1,21 @@
 ﻿using EShop.Domain.Models;
+using EShop.Domain.Repositories;
 using System.Collections.Generic;
 
 namespace EShop.Domain.Seeders;
-//asynchronicznie musi wrzucać do bazy danych
 
-public static class EShopSeeder
+public class EShopSeeder(DataContext context) : IEShopSeeder
 {
-    public static List<Product> GetInitialProducts()
+    public async Task Seed()
     {
-        return new List<Product>
+        if (!context.Products.Any())
+        {
+            var items = new List<Product>
         {
             new Product
             {
                 Id = 1,
-                Name = "Kawa ziarnista arabica 1 kg",
+                Name = "Product1",
                 Ean = "1234567890123",
                 Price = 49.99m,
                 Stock = 100,
@@ -22,7 +24,7 @@ public static class EShopSeeder
             new Product
             {
                 Id = 2,
-                Name = "Zielona herbata matcha 100g",
+                Name = "Product2",
                 Ean = "123456789012",
                 Price = 19.99m,
                 Stock = 200,
@@ -31,12 +33,16 @@ public static class EShopSeeder
             new Product
             {
                 Id = 3,
-                Name = "Spieniacz do mleka ręczny",
+                Name = "Product3",
                 Ean = "1234567890125",
                 Price = 9.99m,
                 Stock = 300,
                 Sku = "SKU03",
             }
         };
+
+            context.Products.AddRange(items);
+            context.SaveChanges();
+        }
     }
 }

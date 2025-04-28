@@ -19,15 +19,15 @@ public class CreditCardControllerIntegrationTests : IClassFixture<WebApplication
     public async Task ValidateCard_ReturnsOk_WhenCardIsValid()
     {
         // Arrange
-        var validCardNumber = "4111111111111111";  // Przykładowy numer karty
+        var validCardNumber = "4111111111111111";  
 
         // Act
         var response = await _client.GetAsync($"/api/creditcard/{validCardNumber}");
 
         // Assert
-        response.EnsureSuccessStatusCode(); // Sprawdzamy, czy odpowiedź ma status 200
+        response.EnsureSuccessStatusCode(); 
         var content = await response.Content.ReadAsStringAsync();
-        Assert.Contains("Valid", content); // Sprawdzamy, czy odpowiedź zawiera "Valid"
+        Assert.Contains("Valid", content); 
     }
 
     [Fact]
@@ -40,14 +40,14 @@ public class CreditCardControllerIntegrationTests : IClassFixture<WebApplication
         var response = await _client.GetAsync($"/api/creditcard/{longCardNumber}");
 
         // Assert
-        Assert.Equal(414, (int)response.StatusCode);  // Sprawdzamy, czy odpowiedź ma status 414 (URI Too Long)
+        Assert.Equal(414, (int)response.StatusCode); 
     }
 
     [Fact]
     public async Task ValidateCard_Returns400_WhenCardNumberTooShort()
     {
         // Arrange
-        var shortCardNumber = "4111";  // Zbyt krótki numer karty
+        var shortCardNumber = "4111"; 
 
         // Act
         var response = await _client.GetAsync($"/api/creditcard/{shortCardNumber}");
@@ -79,6 +79,6 @@ public class CreditCardControllerIntegrationTests : IClassFixture<WebApplication
         var response = await _client.GetAsync($"/api/creditcard/{cardNumberWithoutProvider}");
 
         // Assert
-        Assert.Equal(406, (int)response.StatusCode);  // Sprawdzamy, czy odpowiedź ma status 406 (Not Acceptable)
+        Assert.Equal(406, (int)response.StatusCode); 
     }
 }

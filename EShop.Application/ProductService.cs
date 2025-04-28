@@ -1,38 +1,42 @@
 ﻿using EShop.Domain.Models;
 using EShop.Domain.Repositories;
 
-namespace EShop.Application;
-
-public class ProductService : IProductService
+namespace EShop.Application
 {
-    public readonly IProductsRepository _productsRepository;
-
-    public ProductService(IProductsRepository productsRepository)
+    public class ProductService : IProductService
     {
-        _productsRepository = productsRepository;
-    }
+        private IProductsRepository _repository;
+        public ProductService(IProductsRepository repository)
+        {
+            _repository = repository;
+        }
 
-    public List<string> GetProductNames()
-    {
-        var products = _productsRepository.GetAllProducts();
-        return products.Select(p => p.Name).ToList();
-    }
+        public async Task<List<Product>> GetAllAsync()
+        {
+            var result = await _repository.GetAllProductAsync();
 
-    public void Add(Product product)
-    {
-        _productsRepository.AddProduct(product);
-    }
+            return result;
+        }
 
-    public void Update(Product product)
-    {
-        _productsRepository.UpdateProduct(product);
-    }
+        public async Task<Product> GetAsync(int id)
+        {
+            var result = await _repository.GetProductAsync(id);
 
-    public void Delete(int id)
-    {
-        _productsRepository.DeleteProduct(id);
+            return result;
+        }
+
+        public async Task<Product> Update(Product product)
+        {
+            var result = await _repository.UpdateProductAsync(product);
+
+            return result;
+        }
+
+        public async Task<Product> Add(Product product)
+        {
+            var result = await _repository.AddProductAsync(product);
+
+            return result;
+        }
     }
 }
-
-
-
