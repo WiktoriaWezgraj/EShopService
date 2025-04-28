@@ -1,6 +1,6 @@
 using Moq;
 using Microsoft.AspNetCore.Mvc;
-using EShop.Application.Service;
+using EShop.Application;
 using EShopService.Controllers;
 using EShop.Domain.Models;
 

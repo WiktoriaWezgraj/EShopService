@@ -1,7 +1,7 @@
 ﻿using EShop.Domain.Models;
 using EShop.Domain.Repositories;
 
-namespace EShop.Application.Service
+namespace EShop.Application
 {
     public class ProductService : IProductService
     {

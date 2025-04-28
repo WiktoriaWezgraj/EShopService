@@ -1,4 +1,4 @@
-﻿using EShop.Application.Service;
+﻿using EShop.Application;
 using EShop.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
