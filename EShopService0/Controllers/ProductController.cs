@@ -1,9 +1,10 @@
 ﻿using EShop.Application;
 using EShop.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Caching.Distributed;
 using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace EShopService.Controllers
@@ -13,10 +14,10 @@ namespace EShopService.Controllers
     public class ProductController : ControllerBase
     {
         private readonly IProductService _productService;
-        private readonly IMemoryCache _cache;
+        private readonly IDistributedCache _cache;
         private const string ProductCacheKey = "product_list";
 
-        public ProductController(IProductService productService, IMemoryCache cache)
+        public ProductController(IProductService productService, IDistributedCache cache)
         {
             _productService = productService;
             _cache = cache;
@@ -26,16 +27,24 @@ namespace EShopService.Controllers
         [HttpGet]
         public async Task<ActionResult> Get()
         {
-            if (!_cache.TryGetValue(ProductCacheKey, out List<Product> result))
+            List<Product> result;
+
+            var cachedData = await _cache.GetStringAsync(ProductCacheKey);
+            if (!string.IsNullOrEmpty(cachedData))
+            {
+                result = JsonSerializer.Deserialize<List<Product>>(cachedData);
+            }
+            else
             {
                 result = await _productService.GetAllAsync();
 
-                var cacheEntryOptions = new MemoryCacheEntryOptions
+                var options = new DistributedCacheEntryOptions
                 {
                     AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
                 };
 
-                _cache.Set(ProductCacheKey, result, cacheEntryOptions);
+                var serialized = JsonSerializer.Serialize(result);
+                await _cache.SetStringAsync(ProductCacheKey, serialized, options);
             }
 
             return Ok(result);
@@ -59,7 +68,7 @@ namespace EShopService.Controllers
         public async Task<ActionResult> Post([FromBody] Product product)
         {
             var result = await _productService.AddAsync(product);
-            _cache.Remove(ProductCacheKey);
+            await _cache.RemoveAsync(ProductCacheKey); // Usuń cache po dodaniu produktu
             return Ok(result);
         }
 
@@ -68,7 +77,7 @@ namespace EShopService.Controllers
         public async Task<ActionResult> Put(int id, [FromBody] Product product)
         {
             var result = await _productService.UpdateAsync(product);
-            _cache.Remove(ProductCacheKey);
+            await _cache.RemoveAsync(ProductCacheKey); // Usuń cache po aktualizacji produktu
             return Ok(result);
         }
 
@@ -79,15 +88,15 @@ namespace EShopService.Controllers
             var product = await _productService.GetAsync(id);
             product.Deleted = true;
             var result = await _productService.UpdateAsync(product);
-            _cache.Remove(ProductCacheKey);
+            await _cache.RemoveAsync(ProductCacheKey); // Usuń cache po usunięciu produktu
             return Ok(result);
         }
 
         [HttpPatch]
-        public ActionResult Add([FromBody] Product product)
+        public async Task<ActionResult> Add([FromBody] Product product)
         {
-            var result = _productService.Add(product);
-            _cache.Remove(ProductCacheKey);
+            var result = await _productService.AddAsync(product);
+            await _cache.RemoveAsync(ProductCacheKey); // Usuń cache po dodaniu produktu
             return Ok(result);
         }
     }
