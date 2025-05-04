@@ -1,9 +1,10 @@
 ﻿using EShop.Application;
 using EShop.Domain.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
+using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
-
-// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
 namespace EShopService.Controllers
 {
@@ -11,17 +12,32 @@ namespace EShopService.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
-        private IProductService _productService;
-        public ProductController(IProductService productService)
+        private readonly IProductService _productService;
+        private readonly IMemoryCache _cache;
+        private const string ProductCacheKey = "product_list";
+
+        public ProductController(IProductService productService, IMemoryCache cache)
         {
             _productService = productService;
+            _cache = cache;
         }
 
         // GET: api/<ProductController>
         [HttpGet]
         public async Task<ActionResult> Get()
         {
-            var result = await _productService.GetAllAsync();
+            if (!_cache.TryGetValue(ProductCacheKey, out List<Product> result))
+            {
+                result = await _productService.GetAllAsync();
+
+                var cacheEntryOptions = new MemoryCacheEntryOptions
+                {
+                    AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(24)
+                };
+
+                _cache.Set(ProductCacheKey, result, cacheEntryOptions);
+            }
+
             return Ok(result);
         }
 
@@ -43,7 +59,7 @@ namespace EShopService.Controllers
         public async Task<ActionResult> Post([FromBody] Product product)
         {
             var result = await _productService.AddAsync(product);
-
+            _cache.Remove(ProductCacheKey);
             return Ok(result);
         }
 
@@ -52,7 +68,7 @@ namespace EShopService.Controllers
         public async Task<ActionResult> Put(int id, [FromBody] Product product)
         {
             var result = await _productService.UpdateAsync(product);
-
+            _cache.Remove(ProductCacheKey);
             return Ok(result);
         }
 
@@ -63,7 +79,7 @@ namespace EShopService.Controllers
             var product = await _productService.GetAsync(id);
             product.Deleted = true;
             var result = await _productService.UpdateAsync(product);
-
+            _cache.Remove(ProductCacheKey);
             return Ok(result);
         }
 
@@ -71,7 +87,7 @@ namespace EShopService.Controllers
         public ActionResult Add([FromBody] Product product)
         {
             var result = _productService.Add(product);
-
+            _cache.Remove(ProductCacheKey);
             return Ok(result);
         }
     }

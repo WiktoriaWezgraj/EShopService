@@ -1,6 +1,8 @@
 using EShop.Application;
 using EShop.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Caching.StackExchangeRedis;
 
 namespace EShopService;
 
@@ -31,6 +33,12 @@ public class Program
         {
             context.Database.EnsureCreated();
         }
+
+        builder.Services.AddStackExchangeRedisCache(options =>
+        {
+            options.Configuration = "redis:6379"; // u¿ywamy nazwy kontenera, NIE localhost
+        });
+
 
         // Configure the HTTP request pipeline.
         if (app.Environment.IsDevelopment())

@@ -1,9 +1,11 @@
 services:
+
   eshopservice0:
     image: ${DOCKER_REGISTRY-}eshopservice0
     build:
       context: .
       dockerfile: EShopService0/Dockerfile
+
   sqldata:
     image: mcr.microsoft.com/mssql/server:2017-latest
     environment:
@@ -11,3 +13,15 @@ services:
       - ACCEPT_EULA=Y
     ports:
       - "5434:1433"
+
+  userservice:
+    image: ${DOCKER_REGISTRY-}userservice
+    build:
+      context: .
+      dockerfile: UserService/Dockerfile
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    ports:
+      - "6379:6379"
