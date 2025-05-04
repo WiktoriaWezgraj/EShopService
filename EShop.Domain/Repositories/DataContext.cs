@@ -1,13 +1,25 @@
-﻿using Microsoft.EntityFrameworkCore;
-using EShop.Domain.Models;
+﻿using EShop.Domain.Models;
+using EShop.Domain.Seeders;
+using Microsoft.EntityFrameworkCore;
 
 namespace EShop.Domain.Repositories;
 
 public class DataContext : DbContext
 {
-    public DataContext(DbContextOptions<DataContext> options) : base(options)
+    public DbSet<Product> Products { get; set; }
+    public DbSet<Category> Categories { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        base.OnModelCreating(modelBuilder);
+
+        modelBuilder.Entity<Category>().HasData(EShopSeeder.GetInitialCategories());
+        modelBuilder.Entity<Product>().HasData(EShopSeeder.GetInitialProducts());
     }
 
-    public DbSet<Product> Products { get; set; }
+    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    {
+        base.OnConfiguring(optionsBuilder);
+        optionsBuilder.UseInMemoryDatabase("ProductsDb");
+    }
 }

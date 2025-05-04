@@ -25,5 +25,9 @@ public class Product : BaseModel
 
     public string Sku { get; set; } = string.Empty;
 
+    [Required]
+    public int CategoryId { get; set; }
+
+    [ForeignKey(nameof(CategoryId))]
     public Category Category { get; set; } = default!;
 }

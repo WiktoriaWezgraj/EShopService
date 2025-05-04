@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -19,7 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\EShop.Application\EShop.Application.csproj" />
     <ProjectReference Include="..\EShop.Domain\EShop.Domain.csproj" />
-    <ProjectReference Include="..\EShopService0\EShopService0.csproj" />
+    <ProjectReference Include="..\EShopService0\EShopService.csproj" />
   </ItemGroup>
 
   <ItemGroup>

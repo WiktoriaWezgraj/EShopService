@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Net.Http.Json;
 using Xunit.Abstractions;
 using Microsoft.EntityFrameworkCore;
+using EShopService;
 
 namespace EShopService.IntegrationTests
 {

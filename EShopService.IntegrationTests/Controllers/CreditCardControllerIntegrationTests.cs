@@ -4,83 +4,84 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Xunit;
 
-//maybe wrong
-
-public class CreditCardControllerIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
+namespace EShopService.IntegrationTests.Controllers
 {
-    private readonly WebApplicationFactory<Program> _factory;
-    private readonly HttpClient _client;
-
-    public CreditCardControllerIntegrationTests(WebApplicationFactory<Program> factory)
+    public class CreditCardControllerIntegrationTests : IClassFixture<WebApplicationFactory<Program>>
     {
-        _factory = factory;
-        _client = factory.CreateClient();
-    }
+        private readonly WebApplicationFactory<Program> _factory;
+        private readonly HttpClient _client;
 
-    [Fact]
-    public async Task ValidateCard_ReturnsOk_WhenCardIsValid()
-    {
-        // Arrange
-        var validCardNumber = "4111111111111111";  
+        public CreditCardControllerIntegrationTests(WebApplicationFactory<Program> factory)
+        {
+            _factory = factory;
+            _client = factory.CreateClient();
+        }
 
-        // Act
-        var response = await _client.GetAsync($"/api/creditcard/{validCardNumber}");
+        [Fact]
+        public async Task ValidateCard_ReturnsOk_WhenCardIsValid()
+        {
+            // Arrange
+            var validCardNumber = "4111111111111111";
 
-        // Assert
-        response.EnsureSuccessStatusCode(); 
-        var content = await response.Content.ReadAsStringAsync();
-        Assert.Contains("Valid", content); 
-    }
+            // Act
+            var response = await _client.GetAsync($"/api/creditcard/{validCardNumber}");
 
-    [Fact]
-    public async Task ValidateCard_Returns414_WhenCardNumberTooLong()
-    {
-        // Arrange
-        var longCardNumber = "41111111111111111111111111111111";  // Zbyt długi numer karty
+            // Assert
+            response.EnsureSuccessStatusCode();
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Contains("Valid", content);
+        }
 
-        // Act
-        var response = await _client.GetAsync($"/api/creditcard/{longCardNumber}");
+        [Fact]
+        public async Task ValidateCard_Returns414_WhenCardNumberTooLong()
+        {
+            // Arrange
+            var longCardNumber = "41111111111111111111111111111111";
 
-        // Assert
-        Assert.Equal(414, (int)response.StatusCode); 
-    }
+            // Act
+            var response = await _client.GetAsync($"/api/creditcard/{longCardNumber}");
 
-    [Fact]
-    public async Task ValidateCard_Returns400_WhenCardNumberTooShort()
-    {
-        // Arrange
-        var shortCardNumber = "4111"; 
+            // Assert
+            Assert.Equal(414, (int)response.StatusCode);
+        }
 
-        // Act
-        var response = await _client.GetAsync($"/api/creditcard/{shortCardNumber}");
+        [Fact]
+        public async Task ValidateCard_Returns400_WhenCardNumberTooShort()
+        {
+            // Arrange
+            var shortCardNumber = "4111";
 
-        // Assert
-        Assert.Equal(400, (int)response.StatusCode);  // Sprawdzamy, czy odpowiedź ma status 400 (Bad Request)
-    }
+            // Act
+            var response = await _client.GetAsync($"/api/creditcard/{shortCardNumber}");
 
-    [Fact]
-    public async Task ValidateCard_Returns406_WhenCardNumberInvalid()
-    {
-        // Arrange
-        var invalidCardNumber = "1234567890123456";  // Przykładowy niepoprawny numer karty
+            // Assert
+            Assert.Equal(400, (int)response.StatusCode);
+        }
 
-        // Act
-        var response = await _client.GetAsync($"/api/creditcard/{invalidCardNumber}");
+        [Fact]
+        public async Task ValidateCard_Returns406_WhenCardNumberInvalid()
+        {
+            // Arrange
+            var invalidCardNumber = "1234567890123456";
 
-        // Assert
-        Assert.Equal(406, (int)response.StatusCode);  // Sprawdzamy, czy odpowiedź ma status 406 (Not Acceptable)
-    }
+            // Act
+            var response = await _client.GetAsync($"/api/creditcard/{invalidCardNumber}");
 
-    [Fact]
-    public async Task ValidateCard_Returns406_WhenCardProviderIsNull()
-    {
-        // Arrange
-        var cardNumberWithoutProvider = "0000000000000000";  // Przykładowy numer karty, dla której nie znaleziono dostawcy
+            // Assert
+            Assert.Equal(406, (int)response.StatusCode);
+        }
 
-        // Act
-        var response = await _client.GetAsync($"/api/creditcard/{cardNumberWithoutProvider}");
+        [Fact]
+        public async Task ValidateCard_Returns406_WhenCardProviderIsNull()
+        {
+            // Arrange
+            var cardNumberWithoutProvider = "0000000000000000";
 
-        // Assert
-        Assert.Equal(406, (int)response.StatusCode); 
+            // Act
+            var response = await _client.GetAsync($"/api/creditcard/{cardNumberWithoutProvider}");
+
+            // Assert
+            Assert.Equal(406, (int)response.StatusCode);
+        }
     }
 }
