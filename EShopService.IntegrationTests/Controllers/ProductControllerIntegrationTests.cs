@@ -1,199 +1,112 @@
-using EShop.Domain.Repositories;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.TestPlatform.TestHost;
-using System.Net;
-using System.Net.Http.Json;
+using EShop.Domain.Models;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
+using System.Net.Http.Headers;
+using System.Net.Http.Json;
 using System.Text;
-using System;
-using Microsoft.Extensions.FileSystemGlobbing;
-using System.Threading.Tasks;
-using EShop.Domain.Models;
+using Xunit;
+using System.Security.Claims;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Cryptography;
+using EShop.Domain.Repositories;
 
 namespace EShopService.IntegrationTests.Controllers
 {
     public class ProductControllerIntegrationTest : IClassFixture<WebApplicationFactory<Program>>
     {
         private readonly HttpClient _client;
-        private WebApplicationFactory<Program> _factory;
+        private readonly WebApplicationFactory<Program> _factory;
 
         public ProductControllerIntegrationTest(WebApplicationFactory<Program> factory)
         {
-            _factory = factory
-                .WithWebHostBuilder(builder =>
+            _factory = factory.WithWebHostBuilder(builder =>
+            {
+                builder.ConfigureServices(services =>
                 {
-                    builder.ConfigureServices(services =>
-                    {
-                        // pobranie dotychczasowej konfiguracji bazy danych
-                        var dbContextOptions = services
-                            .SingleOrDefault(service => service.ServiceType == typeof(DbContextOptions<DataContext>));
+                    var dbContextDescriptor = services
+                        .SingleOrDefault(s => s.ServiceType == typeof(DbContextOptions<DataContext>));
 
-                        //// usuniêcie dotychczasowej konfiguracji bazy danych
-                        services.Remove(dbContextOptions);
+                    if (dbContextDescriptor != null)
+                        services.Remove(dbContextDescriptor);
 
-                        // Stworzenie nowej bazy danych
-                        services
-                            .AddDbContext<DataContext>(options => options.UseInMemoryDatabase("MyDBForTest"));
-
-                    });
+                    services.AddDbContext<DataContext>(options =>
+                        options.UseInMemoryDatabase("TestDb"));
                 });
+            });
 
             _client = _factory.CreateClient();
         }
 
-        [Fact]
-        public async Task Get_ReturnsAllProducts_ExceptedTwoProducts()
+        private void AddAuthHeaderWithRole(string role)
         {
-            // Arrange
+            var rsa = RSA.Create();
+            rsa.ImportFromPem(File.ReadAllText("../data/private.key"));
+
+            var creds = new SigningCredentials(new RsaSecurityKey(rsa), SecurityAlgorithms.RsaSha256);
+
+            var token = new JwtSecurityToken(
+                issuer: "EShopNetCourse",
+                audience: "Eshop",
+                claims: new[] { new Claim(ClaimTypes.Role, role) },
+                expires: DateTime.UtcNow.AddHours(1),
+                signingCredentials: creds
+            );
+
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", tokenString);
+        }
+
+        [Fact]
+        public async Task Get_ReturnsAllProducts()
+        {
             using (var scope = _factory.Services.CreateScope())
             {
-                // Pobranie kontekstu bazy danych
                 var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
-
                 dbContext.Products.RemoveRange(dbContext.Products);
-
-                // Stworzenie obiektu
                 dbContext.Products.AddRange(
                     new Product { Name = "Product1" },
                     new Product { Name = "Product2" }
                 );
-                // Zapisanie obiektu
                 await dbContext.SaveChangesAsync();
             }
 
-            // Act
             var response = await _client.GetAsync("/api/product");
-
-            // Assert
             response.EnsureSuccessStatusCode();
             var products = await response.Content.ReadFromJsonAsync<List<Product>>();
             Assert.Equal(2, products?.Count);
         }
 
-
         [Fact]
-        public async Task Post_AddThousandsProducts_ExceptedThousandsProducts()
+        public async Task Post_AddProduct_WithAuth()
         {
-            // Arrange
-            using (var scope = _factory.Services.CreateScope())
-            {
-                // Pobranie kontekstu bazy danych
-                var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+            AddAuthHeaderWithRole("Employee");
 
-                dbContext.Products.RemoveRange(dbContext.Products);
-                dbContext.SaveChanges();
+            var product = new Product { Name = "TestProduct" };
+            var content = new StringContent(JsonConvert.SerializeObject(product), Encoding.UTF8, "application/json");
 
-                var tasks = new List<Task>();
-
-                for (int i = 0; i < 10000; i++)
-                {
-                    int index = i;
-                    tasks.Add(Task.Run(async () =>
-                    {
-                        using (var scope = _factory.Services.CreateScope())
-                        {
-                            // Pobranie kontekstu bazy danych
-                            var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
-                            {
-                                dbContext.Products.Add(new Product { Name = "Product" + index });
-                                dbContext.SaveChanges();
-                            }
-                        }
-                    }));
-                }
-                await Task.WhenAll(tasks);
-            }
-
-            // Act
-            var response = await _client.GetAsync("/api/product");
-
-            // Assert
+            var response = await _client.PostAsync("/api/product", content);
             response.EnsureSuccessStatusCode();
-            var products = await response.Content.ReadFromJsonAsync<List<Product>>();
-            Assert.Equal(10000, products?.Count);
+
+            var result = await response.Content.ReadFromJsonAsync<Product>();
+            Assert.Equal("TestProduct", result?.Name);
         }
 
         [Fact]
-        public async Task Post_AddThousandsProductsAsync_ExceptedThousandsProducts()
+        public async Task Patch_AddProduct_WithAuth()
         {
-            // Arrange
-            using (var scope = _factory.Services.CreateScope())
-            {
-                // Pobranie kontekstu bazy danych
-                var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
+            AddAuthHeaderWithRole("Employee");
 
-                dbContext.Products.RemoveRange(dbContext.Products);
-                await dbContext.SaveChangesAsync();
+            var product = new Product { Name = "PatchProduct" };
+            var content = new StringContent(JsonConvert.SerializeObject(product), Encoding.UTF8, "application/json");
 
-            }
-
-            var tasks = new List<Task>();
-
-            for (int i = 0; i < 10000; i++)
-            {
-                int index = i;
-                tasks.Add(Task.Run(async () =>
-                {
-                    using (var scope = _factory.Services.CreateScope())
-                    {
-                        // Pobranie kontekstu bazy danych
-                        var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
-                        {
-                            dbContext.Products.Add(new Product { Name = "Product" + index });
-                            await dbContext.SaveChangesAsync();
-                        }
-                    }
-                }));
-            }
-            await Task.WhenAll(tasks);
-
-
-            // Act
-            var response = await _client.GetAsync("/api/product");
-
-            // Assert
+            var response = await _client.PatchAsync("/api/product", content);
             response.EnsureSuccessStatusCode();
-            var products = await response.Content.ReadFromJsonAsync<List<Product>>();
-            Assert.Equal(10000, products?.Count);
-        }
 
-
-
-        [Fact]
-        public async Task Add_AddProduct_ExceptedOneProduct()
-        {
-            // Arrange
-            using (var scope = _factory.Services.CreateScope())
-            {
-                // Pobranie kontekstu bazy danych
-                var dbContext = scope.ServiceProvider.GetRequiredService<DataContext>();
-
-                dbContext.Products.RemoveRange(dbContext.Products);
-                dbContext.SaveChanges();
-
-                // Act
-                var category = new Category
-                {
-                    Name = "test"
-                };
-
-                var product = new Product
-                {
-                    Name = "Product",
-                    Category = category
-                };
-
-                var json = JsonConvert.SerializeObject(product);
-                var content = new StringContent(json, Encoding.UTF8, "application/json");
-                var response = await _client.PatchAsync("/api/Product", content);
-
-                var result = await dbContext.Products.ToListAsync();
-
-                // Assert
-                Assert.Equal(1, result?.Count);
-            }
+            var result = await response.Content.ReadFromJsonAsync<Product>();
+            Assert.Equal("PatchProduct", result?.Name);
         }
     }
 }

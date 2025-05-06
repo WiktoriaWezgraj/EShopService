@@ -1,8 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using System.Data;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using User.Domain.Models.JWT;
 
@@ -11,6 +11,7 @@ namespace User.Application.Services
     public class JwtTokenService : IJwtTokenService
     {
         private readonly JwtSettings _settings;
+        private readonly string _privateKeyPath = "../data/private.key";
 
         public JwtTokenService(IOptions<JwtSettings> settings)
         {
@@ -20,14 +21,18 @@ namespace User.Application.Services
         public string GenerateToken(int userId, List<string> roles)
         {
             var claims = new List<Claim>
-             {
-                 new Claim(ClaimTypes.NameIdentifier, userId.ToString())
-             };
+            {
+                new Claim(ClaimTypes.NameIdentifier, userId.ToString())
+            };
 
             claims.AddRange(roles.Select(role => new Claim(ClaimTypes.Role, role)));
 
-            var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_settings.Key));
-            var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+            using var rsa = RSA.Create();
+            var keyText = File.ReadAllText(_privateKeyPath);
+            rsa.ImportFromPem(keyText.ToCharArray());
+
+            var rsaKey = new RsaSecurityKey(rsa);
+            var creds = new SigningCredentials(rsaKey, SecurityAlgorithms.RsaSha256);
 
             var token = new JwtSecurityToken(
                 issuer: _settings.Issuer,
@@ -40,3 +45,4 @@ namespace User.Application.Services
         }
     }
 }
+

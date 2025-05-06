@@ -1,5 +1,6 @@
 ﻿using EShop.Application;
 using EShop.Domain.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Distributed;
 using System;
@@ -23,7 +24,6 @@ namespace EShopService.Controllers
             _cache = cache;
         }
 
-        // GET: api/<ProductController>
         [HttpGet]
         public async Task<ActionResult> Get()
         {
@@ -50,7 +50,6 @@ namespace EShopService.Controllers
             return Ok(result);
         }
 
-        // GET api/<ProductController>/5
         [HttpGet("{id}")]
         public async Task<ActionResult> Get(int id)
         {
@@ -63,40 +62,44 @@ namespace EShopService.Controllers
             return Ok(result);
         }
 
-        // POST api/<ProductController>
+        [Authorize(Policy = "EmployeeOnly")]
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] Product product)
         {
             var result = await _productService.AddAsync(product);
-            await _cache.RemoveAsync(ProductCacheKey); // Usuń cache po dodaniu produktu
+            await _cache.RemoveAsync(ProductCacheKey);
             return Ok(result);
         }
 
-        // PUT api/<ProductController>/5
+        [Authorize(Policy = "EmployeeOnly")]
         [HttpPut("{id}")]
         public async Task<ActionResult> Put(int id, [FromBody] Product product)
         {
             var result = await _productService.UpdateAsync(product);
-            await _cache.RemoveAsync(ProductCacheKey); // Usuń cache po aktualizacji produktu
+            await _cache.RemoveAsync(ProductCacheKey);
             return Ok(result);
         }
 
-        // DELETE api/<ProductController>/5
+        [Authorize(Policy = "EmployeeOnly")]
         [HttpDelete("{id}")]
         public async Task<ActionResult> Delete(int id)
         {
             var product = await _productService.GetAsync(id);
+            if (product == null)
+                return NotFound();
+
             product.Deleted = true;
             var result = await _productService.UpdateAsync(product);
-            await _cache.RemoveAsync(ProductCacheKey); // Usuń cache po usunięciu produktu
+            await _cache.RemoveAsync(ProductCacheKey);
             return Ok(result);
         }
 
+        [Authorize(Policy = "EmployeeOnly")]
         [HttpPatch]
         public async Task<ActionResult> Add([FromBody] Product product)
         {
             var result = await _productService.AddAsync(product);
-            await _cache.RemoveAsync(ProductCacheKey); // Usuń cache po dodaniu produktu
+            await _cache.RemoveAsync(ProductCacheKey);
             return Ok(result);
         }
     }
